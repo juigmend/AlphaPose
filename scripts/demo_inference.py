@@ -4,11 +4,16 @@ import os
 import platform
 import sys
 import time
-
 import numpy as np
 import torch
 from tqdm import tqdm
 import natsort
+
+# added this to work in Windows:
+parent_directory = os.path.abspath('.')
+#print('parent_directory =',parent_directory)
+sys.path.append(parent_directory)
+#print(sys.path)
 
 from detector.apis import get_detector
 from trackers.tracker_api import Tracker
