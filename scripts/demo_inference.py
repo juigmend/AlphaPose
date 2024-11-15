@@ -4,11 +4,16 @@ import os
 import platform
 import sys
 import time
-
 import numpy as np
 import torch
 from tqdm import tqdm
 import natsort
+
+# (JIMG) added this to work in Windows:
+parent_directory = os.path.abspath('.')
+#print('parent_directory =',parent_directory)
+sys.path.append(parent_directory)
+#print(sys.path)
 
 from detector.apis import get_detector
 from trackers.tracker_api import Tracker
@@ -256,18 +261,19 @@ if __name__ == "__main__":
                     runtime_profile['pt'].append(pose_time)
                 if args.pose_track:
                     boxes,scores,ids,hm,cropped_boxes = track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores)
-                hm = hm.cpu()
+                hm = hm.cpu() 
                 writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
                     runtime_profile['pn'].append(post_time)
-
+                    
             if args.profile:
                 # TQDM
                 im_names_desc.set_description(
                     'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
                         dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
                 )
+        
         print_finish_info()
         while(writer.running()):
             time.sleep(1)

@@ -35,7 +35,8 @@ class STrack(BaseTrack):
     def __init__(self, tlwh, score, temp_feat, pose,crop_box,file_name,ps,buffer_size=30):
 
         # wait activate
-        self._tlwh = np.asarray(tlwh, dtype=np.float)
+        #self._tlwh = np.asarray(tlwh, dtype=np.float)
+        self._tlwh = np.asarray(tlwh, dtype = np.float64) # (JIMG)
         self.kalman_filter = None
         self.mean, self.covariance = None, None
         self.is_activated = False
@@ -189,8 +190,6 @@ class STrack(BaseTrack):
     def __repr__(self):
         return 'OT_{}_({}-{})'.format(self.track_id, self.start_frame, self.end_frame)
 
-
-
 class Tracker(object):
     def __init__(self, opt, args):
         self.opt = opt
@@ -246,11 +245,10 @@ class Tracker(object):
                 strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
         ###joint track with bbox-iou
         strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
-        STrack.multi_predict(strack_pool)
+        STrack.multi_predict(strack_pool)        
         dists_emb = embedding_distance(strack_pool, detections)
         dists_emb = fuse_motion(self.kalman_filter, dists_emb, strack_pool, detections)
         matches, u_track, u_detection = linear_assignment(dists_emb, thresh=0.7)
-
         for itracked, idet in matches:
             track = strack_pool[itracked]
             det = detections[idet]
@@ -276,7 +274,6 @@ class Tracker(object):
             else:
                 track.re_activate(det, self.frame_id, new_id=False)
                 refind_stracks.append(track)
-
         for it in u_track:
             track = r_tracked_stracks[it]
             if not track.state == TrackState.Lost:
@@ -293,7 +290,7 @@ class Tracker(object):
             track = unconfirmed[it]
             track.mark_removed()
             removed_stracks.append(track)
-
+        
         """ Step 4: Init new stracks"""
         for inew in u_detection:
             track = detections[inew]
@@ -307,7 +304,6 @@ class Tracker(object):
             if self.frame_id - track.end_frame > self.max_time_lost:
                 track.mark_removed()
                 removed_stracks.append(track)
-
         self.tracked_stracks = [t for t in self.tracked_stracks if t.state == TrackState.Tracked]
         self.tracked_stracks = joint_stracks(self.tracked_stracks, activated_starcks)
         self.tracked_stracks = joint_stracks(self.tracked_stracks, refind_stracks)
