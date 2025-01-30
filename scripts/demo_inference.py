@@ -30,6 +30,8 @@ from alphapose.utils.writer import DataWriter
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
+parser.add_argument('--suffix', type=str, required=False,
+                    help='add suffix to output JSON file name') # (JIMG)
 parser.add_argument('--cfg', type=str, required=True,
                     help='experiment configure file name')
 parser.add_argument('--checkpoint', type=str, required=True,
@@ -46,8 +48,10 @@ parser.add_argument('--list', dest='inputlist',
                     help='image-list', default="")
 parser.add_argument('--image', dest='inputimg',
                     help='image-name', default="")
-parser.add_argument('--outdir', dest='outputpath',
-                    help='output-directory', default="examples/res/")
+parser.add_argument('--jsonoutdir', dest='outputpath', # JIMG
+                    help='output-directory for json files', default="examples/res/") # JIMG
+parser.add_argument('--visoutdir', dest='visoutpath', # JIMG
+                    help='output-directory for video and image files', default="examples/res/") # JIMG
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
@@ -107,7 +111,7 @@ if not args.sp:
 
 
 def check_input():
-    # for wecam
+    # for webcam
     if args.webcam != -1:
         args.detbatch = 1
         return 'webcam', int(args.webcam)
@@ -206,9 +210,9 @@ if __name__ == "__main__":
     if args.save_video and mode != 'image':
         from alphapose.utils.writer import DEFAULT_VIDEO_SAVE_OPT as video_save_opt
         if mode == 'video':
-            video_save_opt['savepath'] = os.path.join(args.outputpath, 'AlphaPose_' + os.path.basename(input_source))
+            video_save_opt['savepath'] = os.path.join(args.visoutpath, 'AlphaPose_' + os.path.basename(input_source)) # JIMG
         else:
-            video_save_opt['savepath'] = os.path.join(args.outputpath, 'AlphaPose_webcam' + str(input_source) + '.mp4')
+            video_save_opt['savepath'] = os.path.join(args.visoutpath, 'AlphaPose_webcam' + str(input_source) + '.mp4')  # JIMG
         video_save_opt.update(det_loader.videoinfo)
         writer = DataWriter(cfg, args, save_video=True, video_save_opt=video_save_opt, queueSize=queueSize).start()
     else:

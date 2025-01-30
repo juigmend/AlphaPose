@@ -24,7 +24,8 @@ EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 class DataWriter():
     def __init__(self, cfg, opt, save_video=False,
                  video_save_opt=DEFAULT_VIDEO_SAVE_OPT,
-                 queueSize=1024):
+                 queueSize=1024,
+                ):
         self.cfg = cfg
         self.opt = opt
         self.video_save_opt = video_save_opt
@@ -100,7 +101,15 @@ class DataWriter():
                 # if the thread indicator variable is set (img is None), stop the thread
                 if self.save_video:
                     stream.release()
-                write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
+
+                # (JIMG):
+                if self.opt.suffix: 
+                    json_fn = 'alphapose-results' + '_' + self.opt.suffix + '.json'
+                else:
+                    json_fn = 'alphapose-results.json'
+                write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval, 
+                           outputfile=json_fn)
+                
                 print("Results have been written to json.")
                 return
             # image channel RGB->BGR
@@ -229,11 +238,11 @@ class DataWriter():
 
     def recognize_video_ext(self, ext=''):
         if ext == 'mp4':
-            return cv2.VideoWriter_fourcc(*'mp4v'), '.' + ext
+            return cv2.VideoWriter_fourcc(*'mp4v'), '.' + ext 
         elif ext == 'avi':
             return cv2.VideoWriter_fourcc(*'XVID'), '.' + ext
         elif ext == 'mov':
             return cv2.VideoWriter_fourcc(*'XVID'), '.' + ext
         else:
             print("Unknow video format {}, will use .mp4 instead of it".format(ext))
-            return cv2.VideoWriter_fourcc(*'mp4v'), '.mp4'
+            return cv2.VideoWriter_fourcc(*'mp4v'), '.mp4' 
