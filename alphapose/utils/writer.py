@@ -1,3 +1,5 @@
+# JIMG = edited by Juan Ignacio Mendoza Garay
+
 import os
 import time
 from threading import Thread
@@ -22,10 +24,10 @@ EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
 
 class DataWriter():
-    def __init__(self, cfg, opt, save_video=False,
-                 video_save_opt=DEFAULT_VIDEO_SAVE_OPT,
-                 queueSize=1024,
-                ):
+    def __init__( self, cfg, opt, save_video=False,
+                  video_save_opt=DEFAULT_VIDEO_SAVE_OPT,
+                  queueSize=1024, video_in=None ): # JIMG
+        self.video_in = video_in # JIMG
         self.cfg = cfg
         self.opt = opt
         self.video_save_opt = video_save_opt
@@ -102,13 +104,11 @@ class DataWriter():
                 if self.save_video:
                     stream.release()
 
-                # (JIMG):
-                if self.opt.suffix: 
-                    json_fn = 'alphapose-results' + '_' + self.opt.suffix + '.json'
-                else:
-                    json_fn = 'alphapose-results.json'
-                write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval, 
-                           outputfile=json_fn)
+                # JIMG:
+                video_fn = os.path.splitext(os.path.basename(self.video_in))
+                json_fn = 'AlphaPose' + '_' + video_fn[0] + self.opt.suffix + '.json'
+                write_json( final_result, self.opt.outputpath, form=self.opt.format,
+                            for_eval=self.opt.eval, outputfile=json_fn )
                 
                 print("Results have been written to json.")
                 return

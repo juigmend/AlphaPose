@@ -1,4 +1,7 @@
 """Script for single-gpu/multi-gpu demo."""
+
+# JIMG = edited by Juan Ignacio Mendoza Garay
+
 import argparse
 import os
 import platform
@@ -9,7 +12,7 @@ import torch
 from tqdm import tqdm
 import natsort
 
-# (JIMG) added this to work in Windows:
+# JIMG added this to work in Windows:
 parent_directory = os.path.abspath('.')
 #print('parent_directory =',parent_directory)
 sys.path.append(parent_directory)
@@ -31,7 +34,7 @@ from alphapose.utils.writer import DataWriter
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
 parser.add_argument('--suffix', type=str, required=False,
-                    help='add suffix to output JSON file name') # (JIMG)
+                    help='add suffix to filenames for output JSON and video',default="") # JIMG
 parser.add_argument('--cfg', type=str, required=True,
                     help='experiment configure file name')
 parser.add_argument('--checkpoint', type=str, required=True,
@@ -209,12 +212,19 @@ if __name__ == "__main__":
     queueSize = 2 if mode == 'webcam' else args.qsize
     if args.save_video and mode != 'image':
         from alphapose.utils.writer import DEFAULT_VIDEO_SAVE_OPT as video_save_opt
+
+        # JIMG:
         if mode == 'video':
-            video_save_opt['savepath'] = os.path.join(args.visoutpath, 'AlphaPose_' + os.path.basename(input_source)) # JIMG
+            bname = os.path.splitext(os.path.basename(input_source))
+            video_save_opt['savepath'] = os.path.join( args.visoutpath, 'AlphaPose_'
+                                                       + bname[0] + args.suffix + bname[1] )
         else:
-            video_save_opt['savepath'] = os.path.join(args.visoutpath, 'AlphaPose_webcam' + str(input_source) + '.mp4')  # JIMG
+            video_save_opt['savepath'] = os.path.join( args.visoutpath, 'AlphaPose_cam' +
+                                                       str(input_source) + args.suffix + '.mp4' )
+            
         video_save_opt.update(det_loader.videoinfo)
-        writer = DataWriter(cfg, args, save_video=True, video_save_opt=video_save_opt, queueSize=queueSize).start()
+        writer = DataWriter( cfg, args, save_video=True, video_save_opt=video_save_opt,
+                             queueSize=queueSize, video_in=input_source ).start() # JIMG
     else:
         writer = DataWriter(cfg, args, save_video=False, queueSize=queueSize).start()
 
