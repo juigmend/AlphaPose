@@ -12,7 +12,7 @@ import torch
 from tqdm import tqdm
 import natsort
 
-# JIMG added this to work in Windows:
+# JIMG -- added this to work in Windows:
 parent_directory = os.path.abspath('.')
 #print('parent_directory =',parent_directory)
 sys.path.append(parent_directory)
@@ -173,6 +173,7 @@ def loop():
 
 if __name__ == "__main__":
     mode, input_source = check_input()
+    video_fn = os.path.splitext(os.path.basename(input_source)) # JIMG
 
     if not os.path.exists(args.outputpath):
         os.makedirs(args.outputpath)
@@ -213,20 +214,19 @@ if __name__ == "__main__":
     if args.save_video and mode != 'image':
         from alphapose.utils.writer import DEFAULT_VIDEO_SAVE_OPT as video_save_opt
 
-        # JIMG:
+    # JIMG:
         if mode == 'video':
-            bname = os.path.splitext(os.path.basename(input_source))
             video_save_opt['savepath'] = os.path.join( args.visoutpath, 'AlphaPose_'
-                                                       + bname[0] + args.suffix + bname[1] )
+                                                       + video_fn[0] + args.suffix + video_fn[1] )
         else:
             video_save_opt['savepath'] = os.path.join( args.visoutpath, 'AlphaPose_cam' +
                                                        str(input_source) + args.suffix + '.mp4' )
-            
         video_save_opt.update(det_loader.videoinfo)
         writer = DataWriter( cfg, args, save_video=True, video_save_opt=video_save_opt,
-                             queueSize=queueSize, video_in=input_source ).start() # JIMG
+                             queueSize=queueSize, video_fn_ne=video_fn[0] ).start()
     else:
-        writer = DataWriter(cfg, args, save_video=False, queueSize=queueSize).start()
+        writer = DataWriter( cfg, args, save_video=False, queueSize=queueSize,
+                             video_fn_ne=video_fn[0] ).start()
 
     if mode == 'webcam':
         print('Starting webcam demo, press Ctrl + C to terminate...')

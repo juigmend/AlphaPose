@@ -8,7 +8,7 @@ cfg.WEIGHTS = 'detector/yolo/data/yolov3-spp.weights'
 # r'\detector\yolox\data\yolox_x.pth' # JIMG
 # r'\detector\yolox\data\yolox_l.pth' # JIMG
 #   'detector/yolo/data/yolov3-spp.weights' # JIMG
-cfg.INP_DIM = 1536 # 1536, 1280, 1024, 960, 768, 640 (good for 4 people) # JIMG
+cfg.INP_DIM = 640 # 2560, 1536, 1280, 1024, 960, 768, 736, 704, 672, 640 (good for 4 people) # JIMG
                    # multiple of 32, original = 608, ("fast" = 420, might stall) # JIMG
 cfg.NMS_THRES = 0.6 # original = 0.6, fast = 0.45 # JIMG
 cfg.CONFIDENCE = 0.1 # original = 0.1, fast = 0.5 # JIMG
