@@ -35,6 +35,7 @@ from alphapose.utils.writer import DataWriter
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
 parser.add_argument('--suffix', type=str, required=False,
                     help='add suffix to filenames for output JSON and video',default="") # JIMG
+parser.add_argument('--param', nargs='+', type=float, required=False, help='idim thre conf') # JIMG
 parser.add_argument('--cfg', type=str, required=True,
                     help='experiment configure file name')
 parser.add_argument('--checkpoint', type=str, required=True,
@@ -52,9 +53,9 @@ parser.add_argument('--list', dest='inputlist',
 parser.add_argument('--image', dest='inputimg',
                     help='image-name', default="")
 parser.add_argument('--jsonoutdir', dest='outputpath', # JIMG
-                    help='output-directory for json files', default="examples/res/") # JIMG
+                    help='output directory for json files', default="examples/res/") # JIMG
 parser.add_argument('--visoutdir', dest='visoutpath', # JIMG
-                    help='output-directory for video and image files', default="examples/res/") # JIMG
+                    help='output directory for video and image files', default="examples/res/") # JIMG
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
@@ -170,8 +171,8 @@ def loop():
         yield n
         n += 1
 
-
 if __name__ == "__main__":
+
     mode, input_source = check_input()
     video_fn = os.path.splitext(os.path.basename(input_source)) # JIMG
 

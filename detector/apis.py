@@ -3,14 +3,19 @@
 # Written by Chao Xu (xuchao.19962007@sjtu.edu.cn)
 # -----------------------------------------------------
 
+# JIMG = modified by Juan Ignacio Mendoza Garay
+
 """API of detector"""
 from abc import ABC, abstractmethod
-
 
 def get_detector(opt=None):
     if opt.detector == 'yolo':
         from detector.yolo_api import YOLODetector
         from detector.yolo_cfg import cfg
+        if opt.param: # JIMG
+            cfg.INP_DIM = int(opt.param[0])
+            cfg.NMS_THRES = opt.param[1]
+            cfg.CONFIDENCE = opt.param[2]
         return YOLODetector(cfg, opt)
     elif 'yolox' in opt.detector:
         from detector.yolox_api import YOLOXDetector

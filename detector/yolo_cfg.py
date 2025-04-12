@@ -1,6 +1,5 @@
-'''This file is created dynamically by 
-syncoord.video.posetest'''
 from easydict import EasyDict as edict
+
 cfg = edict()
 cfg.CONFIG = "detector/yolo/cfg/yolov3-spp.cfg"
 cfg.WEIGHTS = "detector/yolo/data/yolov3-spp.weights"
