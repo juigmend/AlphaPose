@@ -236,16 +236,19 @@ def run(argdict):
                              video_fn_ne=video_fn[0] ).start()
 
     if args.verbosity==0: disable_tqdm=True
-    else disable_tqdm=False
+    else:
+        disable_tqdm=False
+        bfmt = '{l_bar}{bar:70}{r_bar}{bar:-70b}'
 
     if mode == 'webcam':
         if args.verbosity:
             print('Webcam process initiated. Press Ctrl + C to terminate.')
         sys.stdout.flush()
-        im_names_desc = tqdm(loop(), disable=disable_tqdm)
+        im_names_desc = tqdm( loop(), disable=disable_tqdm, bar_format=bfmt )
     else:
         data_len = det_loader.length
-        im_names_desc = tqdm(range(data_len), dynamic_ncols=True, disable=disable_tqdm)
+        im_names_desc = tqdm( range(data_len), dynamic_ncols=True, disable=disable_tqdm,
+                              bar_format=bfmt )
 
     batchSize = args.posebatch
     if args.flip:
