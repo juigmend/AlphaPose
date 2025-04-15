@@ -105,11 +105,11 @@ class DataWriter():
                     stream.release()
 
                 # JIMG:
-                json_fn = 'AlphaPose' + '_' + self.video_fn_ne + self.opt.suffix + '.json'
+                json_fn = f'AlphaPose_{self.video_fn_ne}{self.opt.suffix}.json'
                 write_json( final_result, self.opt.outputpath, form=self.opt.format,
                             for_eval=self.opt.eval, outputfile=json_fn )
+                print(f"Results have been written to {json_fn}.")
                 
-                print("Results have been written to json.")
                 return
             # image channel RGB->BGR
             orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]

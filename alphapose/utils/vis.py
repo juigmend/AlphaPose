@@ -1,11 +1,17 @@
+# JIMG = changes made by Juan Ignacio Mendoza Garay
+
 import math
 import time
+
+# JIMG:
+import logging
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.WARNING)
 
 import cv2
 import matplotlib
 
 matplotlib.use('agg')
-import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
