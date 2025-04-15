@@ -197,7 +197,8 @@ class DetectionLoader():
                             im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
                         self.wait_and_put(self.image_queue, (imgs, orig_imgs, im_names, im_dim_list))
                     self.wait_and_put(self.image_queue, (None, None, None, None))
-                    print('===========================> This video get ' + str(k) + ' frames in total.')
+                    if self.opt.verbosity:
+                        print('This video gets ' + str(k) + ' frames in total.')
                     sys.stdout.flush()
                     stream.release()
                     return

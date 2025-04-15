@@ -108,8 +108,8 @@ class DataWriter():
                 json_fn = f'AlphaPose_{self.video_fn_ne}{self.opt.suffix}.json'
                 write_json( final_result, self.opt.outputpath, form=self.opt.format,
                             for_eval=self.opt.eval, outputfile=json_fn )
-                print(f"Results have been written to {json_fn}.")
-                
+                if self.opt.verbosity==2:
+                    print(f"Results have been written to {json_fn}.")
                 return
             # image channel RGB->BGR
             orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]

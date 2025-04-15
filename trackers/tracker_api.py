@@ -203,7 +203,7 @@ class Tracker(object):
         
         self.model = nn.DataParallel(m,device_ids=args.gpus).to(args.device).eval()
         
-        load_pretrained_weights(self.model,self.opt.loadmodel)
+        load_pretrained_weights(self.model,self.opt.loadmodel,args)
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]
         self.removed_stracks = []  # type: list[STrack]

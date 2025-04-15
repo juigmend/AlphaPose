@@ -682,7 +682,7 @@ def load_checkpoint(fpath):
         print('Unable to load checkpoint from "{}"'.format(fpath))
         raise
     return checkpoint
-def load_pretrained_weights(model, weight_path):
+def load_pretrained_weights(model, weight_path,args):
     r"""Loads pretrianed weights to model.
 
     Features::
@@ -692,6 +692,7 @@ def load_pretrained_weights(model, weight_path):
     Args:
         model (nn.Module): network model.
         weight_path (str): path to pretrained weights.
+        args
 
     Examples::
         >>> from torchreid.utils import load_pretrained_weights
@@ -736,10 +737,8 @@ def load_pretrained_weights(model, weight_path):
             '(** ignored and continue **)'.format(weight_path)
         )
     else:
-        print(
-            'loading reid model from {}...'.
-            format(weight_path)
-        )
+        if args.verbosity==2:
+            print( 'Loading reid model from {}...'.format(weight_path))
         '''
         if len(discarded_layers) > 0:
             print(

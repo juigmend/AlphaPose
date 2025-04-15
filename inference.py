@@ -57,6 +57,7 @@ def run(argdict):
             qsize: int. Length of result buffer (cpu memory). Default=1024
             flip: bool. Enable flip testing. Default=False
             debug: bool. Print detailed information. Default=False
+            verbosity: 0, 1, or 2. Default = 2
 
         Video options:
             video: str. Video file name.
@@ -93,6 +94,7 @@ def run(argdict):
     args.gpus = argdict.get('gpus','0')
     args.qsize = argdict.get('qsize',1024)
     args.flip = argdict.get('flip',False)
+    args.verbosity = argdict.get('verbosity',2)
     args.debug = argdict.get('debug',False)
     args.video = argdict.get('video','')
     args.webcam = argdict.get('webcam',-1)
@@ -101,28 +103,28 @@ def run(argdict):
     args.pose_flow = argdict.get('pose_flow',False)
     args.pose_track = argdict.get('pose_track',False)
 
+
     cfg = update_config(args.cfg)
-    
+
     if platform.system() == 'Windows':
         args.sp = True
-    
+
     args.gpus = [int(i) for i in args.gpus.split(',')] if torch.cuda.device_count() >= 1 else [-1]
     args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else "cpu")
     args.detbatch = args.detbatch * len(args.gpus)
     args.posebatch = args.posebatch * len(args.gpus)
     args.tracking = args.pose_track or args.pose_flow or args.detector=='tracker'
-    
+
     if not args.sp:
         torch.multiprocessing.set_start_method('forkserver', force=True)
         torch.multiprocessing.set_sharing_strategy('file_system')
-    
-    
+
     def check_input():
         # for webcam
         if args.webcam != -1:
             args.detbatch = 1
             return 'webcam', int(args.webcam)
-    
+
         # for video
         if len(args.video):
             if os.path.isfile(args.video):
@@ -130,7 +132,7 @@ def run(argdict):
                 return 'video', videofile
             else:
                 raise IOError('Error: --video must refer to a video file, not directory.')
-    
+
         # for detection results
         if len(args.detfile):
             if os.path.isfile(args.detfile):
@@ -138,13 +140,13 @@ def run(argdict):
                 return 'detfile', detfile
             else:
                 raise IOError('Error: --detfile must refer to a detection json file, not directory.')
-    
+
         # for images
         if len(args.inputpath) or len(args.inputlist) or len(args.inputimg):
             inputpath = args.inputpath
             inputlist = args.inputlist
             inputimg = args.inputimg
-    
+
             if len(inputlist):
                 im_names = open(inputlist, 'r').readlines()
             elif len(inputpath) and inputpath != '/':
@@ -154,20 +156,19 @@ def run(argdict):
             elif len(inputimg):
                 args.inputpath = os.path.split(inputimg)[0]
                 im_names = [os.path.split(inputimg)[1]]
-    
+
             return 'image', im_names
-    
+
         else:
             raise NotImplementedError
-    
-    
+
     def print_finish_info():
-        print('Pose detection and tracking done.')
+        if args.verbosity==2:
+            print('Pose detection and tracking done.')
         if (args.save_img or args.save_video) and not args.vis_fast:
             print('Rendering remaining images in the queue.')
             print('If this step takes too long, you may specify --vis_fast = True.')
-    
-    
+
     def loop():
         n = 0
         while True:
@@ -190,13 +191,16 @@ def run(argdict):
         det_loader = FileDetectionLoader(input_source, cfg, args)
         det_worker = det_loader.start()
     else:
-        det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode, queueSize=args.qsize)
+        det_loader = DetectionLoader( input_source, get_detector(args), cfg, args,
+                                      batchSize=args.detbatch, mode=mode, queueSize=args.qsize )
         det_worker = det_loader.start()
 
     # Load pose model
-    pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
+    pose_model = builder.build_sppe( cfg.MODEL, preset_cfg=cfg.DATA_PRESET,
+                                     verbosity=args.verbosity )
 
-    print('Loading pose model from %s...' % (args.checkpoint,))
+    if args.verbosity==2:
+        print('Loading pose model from %s...' % (args.checkpoint,))
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
     pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
@@ -231,13 +235,17 @@ def run(argdict):
         writer = DataWriter( cfg, args, save_video=False, queueSize=queueSize,
                              video_fn_ne=video_fn[0] ).start()
 
+    if args.verbosity==0: disable_tqdm=True
+    else disable_tqdm=False
+
     if mode == 'webcam':
-        print('Webcam process initiated. Press Ctrl + C to terminate.')
+        if args.verbosity:
+            print('Webcam process initiated. Press Ctrl + C to terminate.')
         sys.stdout.flush()
-        im_names_desc = tqdm(loop())
+        im_names_desc = tqdm(loop(), disable=disable_tqdm)
     else:
         data_len = det_loader.length
-        im_names_desc = tqdm(range(data_len), dynamic_ncols=True)
+        im_names_desc = tqdm(range(data_len), dynamic_ncols=True, disable=disable_tqdm)
 
     batchSize = args.posebatch
     if args.flip:
@@ -283,18 +291,19 @@ def run(argdict):
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
                     runtime_profile['pn'].append(post_time)
-                    
+
             if args.profile:
                 # TQDM
-                im_names_desc.set_description(
-                    'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
-                        dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
-                )
-        
-        print_finish_info()
-        while(writer.running()):
-            time.sleep(1)
-            print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
+                tqdm_str = 'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'
+                im_names_desc.set_description( tqdm_str.format( dt=np.mean(runtime_profile['dt']),
+                                                                pt=np.mean(runtime_profile['pt']),
+                                                                pn=np.mean(runtime_profile['pn']) ))
+
+        if args.verbosity:
+            print_finish_info()
+            while(writer.running()):
+                time.sleep(1.5)
+                print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
         writer.stop()
         det_loader.stop()
     except Exception as e:
@@ -302,13 +311,15 @@ def run(argdict):
         print('An error as above occurs when processing the images, please check it')
         pass
     except KeyboardInterrupt:
-        print_finish_info()
+        if args.verbosity:
+            print_finish_info()
         # Thread won't be killed when press Ctrl+C
         if args.sp:
             det_loader.terminate()
-            while(writer.running()):
-                time.sleep(1)
-                print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
+            if args.verbosity:
+                while(writer.running()):
+                    time.sleep(1.5)
+                    print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
