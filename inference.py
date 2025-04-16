@@ -238,7 +238,7 @@ def run(argdict):
     if args.verbosity==0: disable_tqdm=True
     else:
         disable_tqdm=False
-        bfmt = '{l_bar}{bar:70}{r_bar}{bar:-70b}'
+        bfmt = '{l_bar}{bar:60}{r_bar}{bar:-60b}'
 
     if mode == 'webcam':
         if args.verbosity:
