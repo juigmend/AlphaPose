@@ -1,0 +1,117 @@
+Usage:
+Comments are delimited by "%%" (without quotes); they contain fields PROBLEM and PROPOSED SOLUTION.
+
+%%
+
+PROBLEM:
+
+In Linux, when using CPU or GPU, and single process, this happens:
+
+Traceback (most recent call last):
+  File "/projappl/project_2013781/run_posetrack.py", line 60, in <module>
+    sc_video.posetrack( video_in_path, json_path, AlphaPose_path, **ptrack_kwargs )
+  File "/projappl/project_2013781/SynCoord/src/syncoord/video.py", line 322, in posetrack
+    import inference
+  File "/projappl/project_2013781/AlphaPose/inference.py", line 20, in <module>
+    from alphapose.utils.detector import DetectionLoader
+  File "/projappl/project_2013781/AlphaPose/alphapose/utils/detector.py", line 12, in <module>
+    from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
+  File "/projappl/project_2013781/AlphaPose/alphapose/utils/presets/__init__.py", line 1, in <module>
+    from .simple_transform import SimpleTransform
+  File "/projappl/project_2013781/AlphaPose/alphapose/utils/presets/simple_transform.py", line 22, in <module>
+    from ..roi_align import RoIAlign
+  File "/projappl/project_2013781/AlphaPose/alphapose/utils/roi_align/__init__.py", line 1, in <module>
+    from .roi_align import roi_align, RoIAlign
+  File "/projappl/project_2013781/AlphaPose/alphapose/utils/roi_align/roi_align.py", line 6, in <module>
+    from . import roi_align_cuda
+ImportError: cannot import name 'roi_align_cuda' from partially initialized module 'alphapose.utils.roi_align' (most likely due to a circular import) (/projappl/project_2013781/AlphaPose/alphapose/utils/roi_align/__init__.py)
+
+PROPOSED SOLUTION:
+
+The following works only when using GPU, in Linux:
+
+In:
+AlphaPose/alphapose/utils/roi_align/roi_align.py
+
+comment line 6:
+from . import roi_align_cuda
+
+Reference:
+https://github.com/MVIG-SJTU/AlphaPose/issues/1199
+
+%%
+
+PROBLEM:
+
+In Linux, when using CPU and single process, this happens:
+
+/usr/local/lib64/python3.12/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+3XcVHtAi8xI.mp4 :
+idim = 640; thre = 0.6; conf = 0.1
+Traceback (most recent call last):
+  File "/projappl/project_2013781/run_posetrack.py", line 60, in <module>
+    sc_video.posetrack( video_in_path, json_path, AlphaPose_path, **ptrack_kwargs )
+  File "/projappl/project_2013781/SynCoord/src/syncoord/video.py", line 328, in posetrack
+    one_posetrack_( idim_, thre_, conf_ )
+  File "/projappl/project_2013781/SynCoord/src/syncoord/video.py", line 291, in one_posetrack_
+    inference.run(alphapose_argdict)
+  File "/projappl/project_2013781/AlphaPose/inference.py", line 195, in run
+    det_loader = DetectionLoader( input_source, get_detector(args), cfg, args,
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/projappl/project_2013781/AlphaPose/detector/apis.py", line 13, in get_detector
+    from detector.yolo_api import YOLODetector
+  File "/projappl/project_2013781/AlphaPose/detector/yolo_api.py", line 27, in <module>
+    from detector.nms import nms_wrapper
+  File "/projappl/project_2013781/AlphaPose/detector/nms/__init__.py", line 1, in <module>
+    from .nms_wrapper import nms, soft_nms
+  File "/projappl/project_2013781/AlphaPose/detector/nms/nms_wrapper.py", line 4, in <module>
+    from . import nms_cpu, nms_cuda
+ImportError: cannot import name 'nms_cpu' from partially initialized module 'detector.nms' (most likely due to a circular import) (/projappl/project_2013781/AlphaPose/detector/nms/__init__.py)
+
+PROPOSED SOLUTION:
+
+In:
+AlphaPose/detector/nms/nms_wrapper.py
+
+comment line 4:
+from . import nms_cpu, nms_cuda
+
+Reference:
+https://github.com/MVIG-SJTU/AlphaPose/issues/1199
+
+%%
+
+PROBLEM:
+
+In Linux, when using CPU and single process, this happens:
+
+/usr/local/lib64/python3.12/site-packages/torch/cuda/__init__.py:734: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+3XcVHtAi8xI.mp4 :
+idim = 640; thre = 0.6; conf = 0.1
+Traceback (most recent call last):
+  File "/projappl/project_2013781/run_posetrack.py", line 60, in <module>
+    sc_video.posetrack( video_in_path, json_path, AlphaPose_path, **ptrack_kwargs )
+  File "/projappl/project_2013781/SynCoord/src/syncoord/video.py", line 328, in posetrack
+    one_posetrack_( idim_, thre_, conf_ )
+  File "/projappl/project_2013781/SynCoord/src/syncoord/video.py", line 291, in one_posetrack_
+    inference.run(alphapose_argdict)
+  File "/projappl/project_2013781/AlphaPose/inference.py", line 195, in run
+    det_loader = DetectionLoader( input_source, get_detector(args), cfg, args,
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/projappl/project_2013781/AlphaPose/detector/apis.py", line 13, in get_detector
+    from detector.yolo_api import YOLODetector
+  File "/projappl/project_2013781/AlphaPose/detector/yolo_api.py", line 27, in <module>
+    from detector.nms import nms_wrapper
+  File "/projappl/project_2013781/AlphaPose/detector/nms/__init__.py", line 1, in <module>
+    from .nms_wrapper import nms, soft_nms
+  File "/projappl/project_2013781/AlphaPose/detector/nms/nms_wrapper.py", line 5, in <module>
+    from .soft_nms_cpu import someft_nms_cpu
+ModuleNotFoundError: No module named 'detector.nms.soft_nms_cpu'
+
+PROPOSED SOLUTION:
+
+hint:
+https://github.com/MVIG-SJTU/AlphaPose/issues/1060
+

@@ -177,6 +177,7 @@ def run(argdict):
 
     #...............................................................................................
     # DRIVER:
+
     mode, input_source = check_input()
     video_fn = os.path.splitext(os.path.basename(input_source))
 
