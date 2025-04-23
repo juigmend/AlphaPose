@@ -3,7 +3,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-# from . import roi_align_cuda # if uncommented it will not work in Linux
+# from . import roi_align_cuda # if uncommented it might not work in Linux
 
 
 class RoIAlignFunction(Function):
