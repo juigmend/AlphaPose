@@ -71,6 +71,18 @@ ImportError: cannot import name 'nms_cpu' from partially initialized module 'det
 
 PROPOSED SOLUTION:
 
+Alternative 1
+
+Call AlphaPose with:
+--cfg configs/halpe_26/resnet/256x192_res50_lr1e-3_1x.yaml
+--checkpoint pretrained_models/halpe26_fast_res50_256x192.pth
+--detector yolox
+
+Reference:
+https://github.com/MVIG-SJTU/AlphaPose/issues/1060
+
+Alternative 2:
+
 In:
 AlphaPose/detector/nms/nms_wrapper.py
 

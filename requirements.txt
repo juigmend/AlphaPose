@@ -1,4 +1,0 @@
-pytorch
-natsort
-easydict
-cython_bbox
