@@ -1,6 +1,7 @@
 """Script for single-gpu/multi-gpu demo."""
 
-# JIMG = edited by Juan Ignacio Mendoza Garay
+# File edited by Juan Ignacio Mendoza Garay (JIMG)
+# 24 April 2025
 
 import argparse
 import os
@@ -12,7 +13,7 @@ import torch
 from tqdm import tqdm
 import natsort
 
-# JIMG -- added this to work in Windows:
+# JIMG - added this to work in Windows:
 parent_directory = os.path.abspath('.')
 #print('parent_directory =',parent_directory)
 sys.path.append(parent_directory)
@@ -35,7 +36,8 @@ from alphapose.utils.writer import DataWriter
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
 parser.add_argument('--suffix', type=str, required=False,
                     help='add suffix to filenames for output JSON and video',default="") # JIMG
-parser.add_argument('--param', nargs='+', type=float, required=False, help='idim thre conf') # JIMG
+parser.add_argument('--param', nargs=3, type=float, required=False, help='idim thre conf') # JIMG
+parser.add_argument('--verbosity', type=int, required=False, default=1) # JIMG
 parser.add_argument('--cfg', type=str, required=True,
                     help='experiment configure file name')
 parser.add_argument('--checkpoint', type=str, required=True,
@@ -191,9 +193,11 @@ if __name__ == "__main__":
         det_worker = det_loader.start()
 
     # Load pose model
-    pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
+    pose_model = builder.build_sppe( cfg.MODEL, preset_cfg=cfg.DATA_PRESET,
+                                     verbosity=args.verbosity ) # JIMG
 
-    print('Loading pose model from %s...' % (args.checkpoint,))
+    if args.verbosity==2: # JIMG
+        print('Loading pose model from %s...' % (args.checkpoint,))
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
     pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
@@ -229,13 +233,21 @@ if __name__ == "__main__":
         writer = DataWriter( cfg, args, save_video=False, queueSize=queueSize,
                              video_fn_ne=video_fn[0] ).start()
 
+    # JIMG:
+    if args.verbosity==0: disable_tqdm=True
+    else:
+        disable_tqdm=False
+        bfmt = '{l_bar}{bar:60}{r_bar}{bar:-60b}'
+
     if mode == 'webcam':
-        print('Starting webcam demo, press Ctrl + C to terminate...')
+        if args.verbosity:
+            print('Webcam process initiated. Press Ctrl + C to terminate.')
         sys.stdout.flush()
-        im_names_desc = tqdm(loop())
+        im_names_desc = tqdm( loop(), disable=disable_tqdm, bar_format=bfmt ) # JIMG
     else:
         data_len = det_loader.length
-        im_names_desc = tqdm(range(data_len), dynamic_ncols=True)
+        im_names_desc = tqdm( range(data_len), dynamic_ncols=True, disable=disable_tqdm, # JIMG
+                              bar_format=bfmt )
 
     batchSize = args.posebatch
     if args.flip:
@@ -289,11 +301,13 @@ if __name__ == "__main__":
                         dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
                 )
         
-        print_finish_info()
-        while(writer.running()):
-            time.sleep(1)
-            print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...', end='\r')
+        if args.verbosity: # JIMG
+            print_finish_info()
+            while(writer.running()):
+                time.sleep(1.5)
+                print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
         writer.stop()
+        
         det_loader.stop()
     except Exception as e:
         print(repr(e))
@@ -304,9 +318,10 @@ if __name__ == "__main__":
         # Thread won't be killed when press Ctrl+C
         if args.sp:
             det_loader.terminate()
-            while(writer.running()):
-                time.sleep(1)
-                print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...', end='\r')
+            if args.verbosity: # JIMG
+                while(writer.running()):
+                    time.sleep(1.5)
+                    print('Rendering remaining ' + str(writer.count()) + ' images in the queue.', end='\r')
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
