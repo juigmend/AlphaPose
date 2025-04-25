@@ -161,11 +161,12 @@ def check_input():
 
 
 def print_finish_info():
-    print('===========================> Finish Model Running.')
+    # JIMG:
+    if args.verbosity==2:
+        print('Pose detection and tracking done.')
     if (args.save_img or args.save_video) and not args.vis_fast:
-        print('===========================> Rendering remaining images in the queue...')
-        print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-
+        print('Rendering remaining images in the queue.')
+        print('If this step takes too long, you may specify --vis_fast = True.')
 
 def loop():
     n = 0
