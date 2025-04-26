@@ -1,4 +1,4 @@
-"""Run Alphapose. This module derives from the modified scripts/demo_inference.py (JIMG)"""
+"""Run Alphapose on CPU. This module derives from the modified scripts/demo_inference.py (JIMG)"""
 
 import argparse
 import os
