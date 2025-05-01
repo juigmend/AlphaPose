@@ -20,6 +20,10 @@ def get_detector(opt=None):
     elif 'yolox' in opt.detector:
         from detector.yolox_api import YOLOXDetector
         from detector.yolox_cfg import cfg
+        if opt.param: # JIMG
+            cfg.INP_DIM = int(opt.param[0])
+            cfg.NMS_THRES = opt.param[1]
+            cfg.CONFIDENCE = opt.param[2]
         if opt.detector.lower() == 'yolox':
             opt.detector = 'yolox-x'
         cfg.MODEL_NAME = opt.detector.lower()

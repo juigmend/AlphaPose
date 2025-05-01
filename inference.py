@@ -239,7 +239,9 @@ def run(argdict):
         writer = DataWriter( cfg, args, save_video=False, queueSize=queueSize,
                              video_fn_ne=video_fn[0] ).start()
 
-    if args.verbosity==0: disable_tqdm=True
+    if args.verbosity==0:
+        disable_tqdm = True
+        bfmt = None
     else:
         disable_tqdm=False
         bfmt = '{l_bar}{bar:60}{r_bar}{bar:-60b}'
