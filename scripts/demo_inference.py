@@ -99,7 +99,11 @@ parser.add_argument('--pose_flow', dest='pose_flow',
 parser.add_argument('--pose_track', dest='pose_track',
                     help='track humans in video with reid', action='store_true', default=False)
 
-args = parser.parse_args()
+# JIMG:
+args, unknown_args = parser.parse_known_args()
+unknown_args = [v for v in unknown_args if v != '']
+if (len(unknown_args)!=0): raise Exception('Unknown arguments:', unknown_args)
+
 cfg = update_config(args.cfg)
 
 if platform.system() == 'Windows':
